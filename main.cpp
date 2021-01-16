@@ -31,105 +31,6 @@ void framebuffer_resize_callback(GLFWwindow* window, int fbW, int fbH)
 	glViewport(0, 0, fbW, fbH);
 }
 
-bool loadShaders(GLuint &program)
-{
-	bool loadSuccess = true;
-	char infoLog[512];
-	GLint success;
-
-	std::string temp = "";
-	std::string src = "";
-
-	std::ifstream in_file;
-
-	// Vertex
-	in_file.open("vertex_core.glsl");
-
-	if (in_file.is_open())
-	{
-		while (std::getline(in_file, temp))
-			src += temp + "\n";
-	}
-	else
-	{
-		std::cout << "ERROR::LOADSHADERS::COULD_NOT_OPEN_VERTEX_FILE" << "\n";
-		loadSuccess = false;
-	}
-
-	in_file.close();
-
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	const GLchar* vertSrc = src.c_str();
-	glShaderSource(vertexShader, 1, &vertSrc, NULL);
-	glCompileShader(vertexShader);
-
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::LOADSHADERS::COULD_NOT_COMPILE_VERTEX_SHADER" << "\n";
-		std::cout << infoLog << "\n";
-		loadSuccess = false;
-	}
-
-	temp = "";
-	src = "";
-
-	// Fragment
-	in_file.open("fragment_core.glsl");
-
-	if (in_file.is_open())
-	{
-		while (std::getline(in_file, temp))
-			src += temp + "\n";
-	}
-	else
-	{
-		std::cout << "ERROR:LOADSHADERS::COULD_NOT_OPEN_FRAGMENT_FILE" << "\n";
-		loadSuccess = false;
-	}
-
-	in_file.close();
-
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	const GLchar* fragSrc = src.c_str();
-	glShaderSource(fragmentShader, 1, &fragSrc, NULL);
-	glCompileShader(fragmentShader);
-
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::LOADSHADERS::COULD_NOT_COMPILE_FRAGMENT_SHADER" << "\n";
-		std::cout << infoLog << "\n";
-		loadSuccess = false;
-	}
-
-	// Program
-	program = glCreateProgram();
-
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, fragmentShader);
-
-	glLinkProgram(program);
-
-	glGetProgramiv(program, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(program, 512, NULL, infoLog);
-		std::cout << "ERROR::LOADSHADERS::COULD_NOT_LINK_PROGRAM" << "\n";
-		std::cout << infoLog << "\n";
-		loadSuccess = false;
-	}
-
-	// End
-	glUseProgram(0);
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-	
-	return loadSuccess;
-}
-
 void updateInput(GLFWwindow* window, glm::vec3& position, glm::vec3& rotation, glm::vec3& scale)
 {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -214,11 +115,7 @@ int main()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// SHADER INIT
-	GLuint core_program;
-	if (!loadShaders(core_program))
-	{
-		glfwTerminate();
-	}
+	Shader core_program("vertex_core.glsl", "fragment_core.glsl");
 
 	// MODEL
 
@@ -351,13 +248,14 @@ int main()
 	glm::vec3 lightPos0(0.f, 0.f, 2.f);
 
 	// INIT UNIFORMS
-	glUseProgram(core_program);
+	core_program.use();
 
-	glUniformMatrix4fv(glGetUniformLocation(core_program, "ModelMatrix"), 1, GL_FALSE, glm::value_ptr(ModelMatrix));
-	glUniformMatrix4fv(glGetUniformLocation(core_program, "ViewMatrix"), 1, GL_FALSE, glm::value_ptr(ViewMatrix));
-	glUniformMatrix4fv(glGetUniformLocation(core_program, "ProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
-
-	glUniform3fv(glGetUniformLocation(core_program, "lightPos0"), 1, glm::value_ptr(lightPos0));
+	core_program.setMat4fv(ModelMatrix, "ModelMatrix");
+	core_program.setMat4fv(ViewMatrix, "ViewMatrix");
+	core_program.setMat4fv(ProjectionMatrix, "ProjectionMatrix");
+	
+	core_program.setVec3f(lightPos0, "lightPos0");
+	core_program.setVec3f(camPosition, "cameraPos");
 
 	glUseProgram(0);
 
@@ -375,16 +273,9 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.2f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		// Use a program
-		glUseProgram(core_program);
-
 		// Update uniforms
-		glUniform1i(glGetUniformLocation(core_program, "texture0"), 0);
-		glUniform1i(glGetUniformLocation(core_program, "texture1"), 1);
-
-		// Move, rotate, scale
-		/*position.z -= 0.00000001f;
-		rotation.y += 0.00000002f;*/
+		core_program.set1i(0, "texture0");
+		core_program.set1i(1, "texture1");
 
 		ModelMatrix = glm::translate(ModelMatrix, position);
 		ModelMatrix = glm::rotate(ModelMatrix, glm::radians(rotation.x), glm::vec3(1.f, 0.f, 0.f));
@@ -392,8 +283,8 @@ int main()
 		ModelMatrix = glm::rotate(ModelMatrix, glm::radians(rotation.z), glm::vec3(0.f, 0.f, 1.f));
 		ModelMatrix = glm::scale(ModelMatrix, scale);
 
-		glUniformMatrix4fv(glGetUniformLocation(core_program, "ModelMatrix"), 1, GL_FALSE, glm::value_ptr(ModelMatrix));
-		
+		core_program.setMat4fv(ModelMatrix, "ModelMatrix");
+
 		glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
 
 		ProjectionMatrix = glm::mat4(1.f);
@@ -404,7 +295,10 @@ int main()
 			farPlane
 		);
 
-		glUniformMatrix4fv(glGetUniformLocation(core_program, "ProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
+		core_program.setMat4fv(ProjectionMatrix, "ProjectionMatrix");
+
+		// Use a program
+		core_program.use();
 
 		// Activate texture
 		glActiveTexture(GL_TEXTURE0);
@@ -433,9 +327,6 @@ int main()
 	// END OF PROGRAM
 	glfwDestroyWindow(window);
 	glfwTerminate();
-
-	// DELETE PROGRAM
-	glDeleteProgram(core_program);
 
 	// DELETE VAO and Buffers
 
