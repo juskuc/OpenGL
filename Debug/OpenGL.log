@@ -1,3 +1,9 @@
 ﻿  main.cpp
 C:\Users\Justas\source\repos\OpenGL\Texture.h(28,10): warning C4101: 'texture0': unreferenced local variable
+C:\Users\Justas\source\repos\OpenGL\Texture.h(82,10): warning C4101: 'texture0': unreferenced local variable
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+soil2-debug.lib(image_DXT.obj) : warning LNK4099: PDB 'soil2-debug.pdb' was not found with 'soil2-debug.lib(image_DXT.obj)' or at 'C:\Users\Justas\source\repos\OpenGL\Debug\soil2-debug.pdb'; linking object as if no debug info
+soil2-debug.lib(image_helper.obj) : warning LNK4099: PDB 'soil2-debug.pdb' was not found with 'soil2-debug.lib(image_helper.obj)' or at 'C:\Users\Justas\source\repos\OpenGL\Debug\soil2-debug.pdb'; linking object as if no debug info
+soil2-debug.lib(SOIL2.obj) : warning LNK4099: PDB 'soil2-debug.pdb' was not found with 'soil2-debug.lib(SOIL2.obj)' or at 'C:\Users\Justas\source\repos\OpenGL\Debug\soil2-debug.pdb'; linking object as if no debug info
+soil2-debug.lib(wfETC.obj) : warning LNK4099: PDB 'soil2-debug.pdb' was not found with 'soil2-debug.lib(wfETC.obj)' or at 'C:\Users\Justas\source\repos\OpenGL\Debug\soil2-debug.pdb'; linking object as if no debug info
   OpenGL.vcxproj -> C:\Users\Justas\source\repos\OpenGL\Debug\OpenGL.exe
