@@ -1,2 +1,3 @@
 ﻿  main.cpp
+C:\Users\Justas\source\repos\OpenGL\Texture.h(28,10): warning C4101: 'texture0': unreferenced local variable
   OpenGL.vcxproj -> C:\Users\Justas\source\repos\OpenGL\Debug\OpenGL.exe
