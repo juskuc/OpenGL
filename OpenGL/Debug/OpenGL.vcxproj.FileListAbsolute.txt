@@ -1,0 +1,4 @@
+C:\Users\Justas\source\repos\OpenGL\Debug\OpenGL.exe
+C:\Users\Justas\source\repos\OpenGL\Debug\OpenGL.pdb
+D:\dev\OpenGL\Debug\OpenGL.exe
+D:\dev\OpenGL\Debug\OpenGL.pdb

@@ -1,2 +1,0 @@
-C:\Users\Justas\source\repos\OpenGL\Debug\OpenGL.exe
-C:\Users\Justas\source\repos\OpenGL\Debug\OpenGL.pdb
