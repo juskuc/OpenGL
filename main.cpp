@@ -1,5 +1,7 @@
 #include "libs.h"
 
+Primitive test();
+
 Vertex vertices[] =
 {
 	// Position							// Color						// Text						// Normals
@@ -118,7 +120,8 @@ int main()
 	Shader core_program("vertex_core.glsl", "fragment_core.glsl");
 
 	// MODEL MESH
-	Mesh test(vertices, nrOfVertices, indices, nrOfIndices,
+	Quad tempQuad = Quad();
+	Mesh test(&tempQuad,
 		glm::vec3(0.f),
 		glm::vec3(0.f),
 		glm::vec3(1.f)

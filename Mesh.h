@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "Material.h"
 #include "Vertex.h"
+#include "Primitives.h"
 
 class Mesh
 {
@@ -68,6 +69,47 @@ private:
 		glBindVertexArray(0);
 	}
 
+	void initVAO(Primitive* primitive)
+	{
+		// Set variables
+		this->nrOfVertices = primitive->getNrOfVertices();
+		this->nrOfIndices = primitive->getNrOfIndices();
+
+		// Create VAO
+		glCreateVertexArrays(1, &this->VAO);
+		glBindVertexArray(this->VAO);
+
+		// GEN VBO AND BIND AND SEND DATA
+		glGenBuffers(1, &this->VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+		glBufferData(GL_ARRAY_BUFFER, this->nrOfVertices * sizeof(Vertex), primitive->getVertices(), GL_STATIC_DRAW);
+
+		// GEN EBO AND BIND AND SEND DATA
+		glGenBuffers(1, &this->EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->nrOfIndices * sizeof(GLuint), primitive->getIndices(), GL_STATIC_DRAW);
+
+		// SET VERTEX ATTRIB POINTERS AND ENABLE (INPUT ASSEMBLY)
+		// Position
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, position));
+		glEnableVertexAttribArray(0);
+
+		// Color
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, color));
+		glEnableVertexAttribArray(1);
+
+		// Textcoord
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, textcoord));
+		glEnableVertexAttribArray(2);
+
+		// Normal
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
+		glEnableVertexAttribArray(3);
+
+		// BIND VAO 0
+		glBindVertexArray(0);
+	}
+
 	void updateUniforms(Shader* shader)
 	{
 		shader->setMat4fv(this->ModelMatrix, "ModelMatrix");
@@ -98,6 +140,19 @@ public:
 		this->scale = scale;
 
 		this->initVAO(vertexArray, nrOfVertices, indexArray, nrOfIndices);
+		this->updateModelMatrix();
+	}
+
+	Mesh(Primitive* primitive,
+		glm::vec3 position = glm::vec3(0.f),
+		glm::vec3 rotation = glm::vec3(0.f),
+		glm::vec3 scale = glm::vec3(1.f))
+	{
+		this->position = position;
+		this->rotation = rotation;
+		this->scale = scale;
+
+		this->initVAO(primitive);
 		this->updateModelMatrix();
 	}
 

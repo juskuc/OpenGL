@@ -18,3 +18,4 @@
 #include <SOIL2.h>
 
 #include "Mesh.h"
+#include "Primitives.h"
