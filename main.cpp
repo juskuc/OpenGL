@@ -1,4 +1,5 @@
 #include "libs.h"
+#include "Game.h"
 
 Primitive test();
 
@@ -26,11 +27,6 @@ void updateInput(GLFWwindow* window)
 	{
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
-}
-
-void framebuffer_resize_callback(GLFWwindow* window, int fbW, int fbH)
-{
-	glViewport(0, 0, fbW, fbH);
 }
 
 void updateInput(GLFWwindow* window, Mesh &mesh)
@@ -69,30 +65,53 @@ void updateInput(GLFWwindow* window, Mesh &mesh)
 	}
 }
 
+
+GLFWwindow* createWindow(
+	const char* title,
+	const int width, const int height,
+	int& fbWidth, int& fbHeight,
+	const int GLmajorVer, const int GLminorVer,
+	bool resizable
+	)
+{
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GLmajorVer);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GLminorVer);
+	glfwWindowHint(GLFW_RESIZABLE, resizable);
+
+	GLFWwindow* window = glfwCreateWindow(width, height, title, NULL, NULL);
+
+	glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+	glfwSetFramebufferSizeCallback(window, Game::framebuffer_resize_callback);
+	//
+	//glViewport(0, 0, framebufferWidth, framebufferHeight);
+
+	glfwMakeContextCurrent(window); // IMPORTANT!!
+
+	return window;
+}
+
 int main()
 {
 	// INIT GLFW
 	glfwInit();
 
 	// CREATE WINDOW
+	const int GLmajorVersion = 4;
+	const int GLminorVersion = 5;
 	const int WINDOW_WIDTH = 640;
 	const int WINDOW_HEIGHT = 480;
-	int framebufferWidth = 0;
-	int framebufferHeight = 0;
+	const char* vertex_core = "vertex_core.glsl";
+	const char* fragment_core = "fragment_core.glsl";
+	int framebufferWidth = WINDOW_WIDTH;
+	int framebufferHeight = WINDOW_HEIGHT;
 
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL", NULL, NULL);
-	
-	glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
-	glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
-	//
-	//glViewport(0, 0, framebufferWidth, framebufferHeight);
-
-	glfwMakeContextCurrent(window); // IMPORTANT!!
+	GLFWwindow* window = createWindow(
+		"OpenGL",
+		WINDOW_WIDTH, WINDOW_HEIGHT,
+		framebufferWidth, framebufferHeight,
+		GLmajorVersion, GLminorVersion,
+		false);
 
 	// INIT GLEW (NEEDS WINDOW AND OPENGL CONTEXT)
 	glewExperimental = GL_TRUE;
@@ -117,7 +136,8 @@ int main()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// SHADER INIT
-	Shader core_program("vertex_core.glsl", "fragment_core.glsl");
+	Shader core_program(GLmajorVersion, GLminorVersion,
+		vertex_core, fragment_core);
 
 	// MODEL MESH
 	Quad tempQuad = Quad();
