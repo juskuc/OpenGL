@@ -93,161 +93,19 @@ GLFWwindow* createWindow(
 
 int main()
 {
-	// INIT GLFW
-	glfwInit();
-
-	// CREATE WINDOW
-	const int GLmajorVersion = 4;
-	const int GLminorVersion = 5;
-	const int WINDOW_WIDTH = 640;
-	const int WINDOW_HEIGHT = 480;
-	const char* vertex_core = "vertex_core.glsl";
-	const char* fragment_core = "fragment_core.glsl";
-	int framebufferWidth = WINDOW_WIDTH;
-	int framebufferHeight = WINDOW_HEIGHT;
-
-	GLFWwindow* window = createWindow(
+	Game game(
 		"OpenGL",
-		WINDOW_WIDTH, WINDOW_HEIGHT,
-		framebufferWidth, framebufferHeight,
-		GLmajorVersion, GLminorVersion,
+		640, 480,
+		4, 4,
 		false);
 
-	// INIT GLEW (NEEDS WINDOW AND OPENGL CONTEXT)
-	glewExperimental = GL_TRUE;
-
-	// Error
-	if (glewInit() != GLEW_OK)
-	{
-		std::cout << "ERROR::MAIN.CPP::GLEW_INIT_FAILED" << "\n";
-		glfwTerminate();
-	}
-
-	// OPENGL OPTIONS
-	glEnable(GL_DEPTH_TEST);
-
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	// SHADER INIT
-	Shader core_program(GLmajorVersion, GLminorVersion,
-		vertex_core, fragment_core);
-
-	// MODEL MESH
-	Quad tempQuad = Quad();
-	Mesh test(&tempQuad,
-		glm::vec3(0.f),
-		glm::vec3(0.f),
-		glm::vec3(1.f)
-	);
-	
-	// TEXTURE INIT
-
-	// TEXTURE 0
-	Texture texture0("Images/Texture.png", GL_TEXTURE_2D, 0);
-
-	// TEXTURE 1
-	Texture texture1("Images/Texture1.png", GL_TEXTURE_2D, 1);
-
-	// MATERIAL 0
-	Material material0(glm::vec3(0.1f), glm::vec3(1.f), glm::vec3(1.f), texture0.getTextureUnit(), texture1.getTextureUnit());
-
-	// INIT MATRICES
-	glm::vec3 camPosition(0.f, 0.f, 1.f);
-	glm::vec3 worldUp(0.f, 1.f, 0.f);
-	glm::vec3 camFront(0.f, 0.f, -1.f);
-
-	glm::mat4 ViewMatrix(1.f);
-	ViewMatrix = glm::lookAt(camPosition, camPosition + camFront, worldUp);
-
-	float fov = 90.f;
-	float nearPlane = 0.1f;
-	float farPlane = 1000.f;
-	glm::mat4 ProjectionMatrix(1.f);
-	ProjectionMatrix = glm::perspective(
-		glm::radians(fov),
-		static_cast<float>(framebufferWidth / framebufferHeight) ,
-		nearPlane,
-		farPlane
-	);
-
-	// LIGHTS
-	glm::vec3 lightPos0(0.f, 0.f, 2.f);
-
-	// INIT UNIFORMS
-	core_program.use();
-
-	core_program.setMat4fv(ViewMatrix, "ViewMatrix");
-	core_program.setMat4fv(ProjectionMatrix, "ProjectionMatrix");
-	
-	core_program.setVec3f(lightPos0, "lightPos0");
-	core_program.setVec3f(camPosition, "cameraPos");
-
-	glUseProgram(0);
-
 	// MAIN LOOP
-	while (!glfwWindowShouldClose(window))
+	while (!game.getWindowShouldClose())
 	{
 		// UPDATE INPUT ---
-		glfwPollEvents();
-		updateInput(window, test);
-		// UPDATE ---
-		updateInput(window);
-
-		// DRAW ---
-		// Clear
-		glClearColor(0.2f, 0.3f, 0.2f, 1.f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-		// Update uniforms
-		core_program.set1i(texture0.getTextureUnit(), "texture0");
-		core_program.set1i(texture1.getTextureUnit(), "texture1");
-		material0.sendToShader(core_program);
-
-		// Update framebuffer size and projection matrix
-		glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
-
-		ProjectionMatrix = glm::mat4(1.f);
-		ProjectionMatrix = glm::perspective(
-			glm::radians(fov),
-			static_cast<float>(framebufferWidth / framebufferHeight),
-			nearPlane,
-			farPlane
-		);
-
-		core_program.setMat4fv(ProjectionMatrix, "ProjectionMatrix");
-
-		// Use a program
-		core_program.use();
-
-		// Activate texture
-		texture0.bind();
-		texture1.bind();
-
-		// Draw
-		test.render(&core_program);
-
-		// End Draw
-		glfwSwapBuffers(window);
-		glFlush();
-
-		glBindVertexArray(0);
-		glUseProgram(0);
-		glActiveTexture(0);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		game.update();
+		game.render();
 	}
-
-	// END OF PROGRAM
-	glfwDestroyWindow(window);
-	glfwTerminate();
-
-	// DELETE VAO and Buffers
 
 	return 0;
 }
