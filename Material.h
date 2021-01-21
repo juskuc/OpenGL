@@ -14,8 +14,21 @@
 
 class Material
 {
+private:
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+	GLint diffuseTex;
+	GLint specularTex;
+
 public:
-	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, GLint diffuseTex, GLint specularTex)
+	Material(
+		glm::vec3 ambient,
+		glm::vec3 diffuse,
+		glm::vec3 specular,
+		GLint diffuseTex,
+		GLint specularTex
+	)
 	{
 		this->ambient = ambient;
 		this->diffuse = diffuse;
@@ -35,11 +48,4 @@ public:
 		program.set1i(this->diffuseTex, "material.diffuseTex");
 		program.set1i(this->specularTex, "material.specularTex");
 	}
-
-private:
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
-	GLint diffuseTex;
-	GLint specularTex;
 };

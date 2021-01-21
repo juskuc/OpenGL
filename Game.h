@@ -65,6 +65,8 @@ private:
 	void initLights();
 	void initUniforms();
 
+	void updateUniforms();
+
 // Static variables
 
 public:
@@ -89,5 +91,7 @@ public:
 
 // Static functions
 	static void framebuffer_resize_callback(GLFWwindow* window, int fbW, int fbH);
+	static void updateInput(GLFWwindow* window);
+	static void updateInput(GLFWwindow* window, Mesh &mesh);
 };
 

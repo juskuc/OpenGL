@@ -88,15 +88,16 @@ void Game::initShaders()
 void Game::initTextures()
 {
 	// TEXTURE 0
-	this->textures.push_back(new Texture("Images/Texture.png", GL_TEXTURE_2D, 0));
+	this->textures.push_back(new Texture("Images/Texture.png", GL_TEXTURE_2D));
 
 	// TEXTURE 1
-	this->textures.push_back(new Texture("Images/Texture1.png", GL_TEXTURE_2D, 1));
+	this->textures.push_back(new Texture("Images/Texture1.png", GL_TEXTURE_2D));
 }
 
 void Game::initMaterials()
 {
-	this->materials.push_back(new Material(glm::vec3(0.1f), glm::vec3(1.f), glm::vec3(1.f), this->textures[TEX_0]->getTextureUnit(), this->textures[TEX_1]->getTextureUnit()));
+	this->materials.push_back(new Material(glm::vec3(0.1f), glm::vec3(1.f), glm::vec3(1.f),
+		0, 1));
 }
 
 void Game::initMeshes()
@@ -107,6 +108,13 @@ void Game::initMeshes()
 		glm::vec3(0.f),
 		glm::vec3(1.f)
 		)
+	);
+
+	this->meshes.push_back(new Mesh(&tempQuad,
+		glm::vec3(0.f),
+		glm::vec3(0.f),
+		glm::vec3(1.f)
+	)
 	);
 }
 
@@ -123,6 +131,27 @@ void Game::initUniforms()
 
 	this->shaders[SHADER_CORE_PROGRAM]->setVec3f(*this->lights[0], "lightPos0");
 	this->shaders[SHADER_CORE_PROGRAM]->setVec3f(this->camPosition, "cameraPos");
+}
+
+void Game::updateUniforms()
+{
+	// Update uniforms
+	this->shaders[SHADER_CORE_PROGRAM]->set1i(0, "texture0");
+	this->shaders[SHADER_CORE_PROGRAM]->set1i(1, "texture1");
+	this->materials[MAT_1]->sendToShader(*this->shaders[SHADER_CORE_PROGRAM]);
+
+	// Update framebuffer size and projection matrix
+	glfwGetFramebufferSize(this->window, &this->framebufferWidth, &this->framebufferHeight);
+
+	ProjectionMatrix = glm::mat4(1.f);
+	ProjectionMatrix = glm::perspective(
+		glm::radians(fov),
+		static_cast<float>(framebufferWidth / framebufferHeight),
+		nearPlane,
+		farPlane
+	);
+
+	this->shaders[SHADER_CORE_PROGRAM]->setMat4fv(ProjectionMatrix, "ProjectionMatrix");
 }
 
 // Constructors/Destructors
@@ -175,7 +204,7 @@ Game::~Game()
 		delete this->textures[i];
 	
 	for (size_t i = 0; i < this->materials.size(); i++)
-		delete this->textures[i];
+		delete this->materials[i];
 
 	for (size_t i = 0; i < this->meshes.size(); i++)
 		delete this->meshes[i];
@@ -205,45 +234,30 @@ void Game::update()
 }
 
 void Game::render()
-{		
+{
 	// UPDATE ---
-	// updateInput(window);
+	this->updateInput(this->window, *this->meshes[MESH_QUAD]);
 
 	// DRAW ---
 	// Clear
 	glClearColor(0.2f, 0.3f, 0.2f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// Update uniforms
-	this->shaders[SHADER_CORE_PROGRAM]->set1i(this->textures[TEX_0]->getTextureUnit(), "texture0");
-	this->shaders[SHADER_CORE_PROGRAM]->set1i(this->textures[TEX_1]->getTextureUnit(), "texture1");
-	this->materials[MAT_1]->sendToShader(*this->shaders[SHADER_CORE_PROGRAM]);
-
-	// Update framebuffer size and projection matrix
-	glfwGetFramebufferSize(this->window, &this->framebufferWidth, &this->framebufferHeight);
-
-	ProjectionMatrix = glm::mat4(1.f);
-	ProjectionMatrix = glm::perspective(
-		glm::radians(fov),
-		static_cast<float>(framebufferWidth / framebufferHeight),
-		nearPlane,
-		farPlane
-	);
-
-	this->shaders[SHADER_CORE_PROGRAM]->setMat4fv(ProjectionMatrix, "ProjectionMatrix");
+	// Update the uniforms
+	this->updateUniforms();
 
 	// Use a program
 	this->shaders[SHADER_CORE_PROGRAM]->use();
 
 	// Activate texture
-	this->textures[TEX_0]->bind();
-	this->textures[TEX_1]->bind();
+	this->textures[TEX_0]->bind(0);
+	this->textures[TEX_1]->bind(1);
 
 	// Draw
 	this->meshes[MESH_QUAD]->render(this->shaders[SHADER_CORE_PROGRAM]);
 
 	// End Draw
-	glfwSwapBuffers(window);
+	glfwSwapBuffers(this->window);
 	glFlush();
 
 	glBindVertexArray(0);
@@ -257,4 +271,48 @@ void Game::render()
 void Game::framebuffer_resize_callback(GLFWwindow* window, int fbW, int fbH)
 {
 	glViewport(0, 0, fbW, fbH);
+}
+
+void Game::updateInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+	}
+}
+
+void Game::updateInput(GLFWwindow* window, Mesh& mesh)
+{
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		mesh.move(glm::vec3(0.f, 0.f, -0.01f));
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		mesh.move(glm::vec3(0.f, 0.f, 0.01f));
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		mesh.move(glm::vec3(-0.01f, 0.f, 0.f));
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		mesh.move(glm::vec3(0.01f, 0.f, 0.f));
+	}
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		mesh.rotate(glm::vec3(0.f, -1.f, 0.f));
+	}
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	{
+		mesh.rotate(glm::vec3(0.f, 1.f, 0.f));
+	}
+	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+	{
+		mesh.scaleUp(glm::vec3(0.1f));
+	}
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+	{
+		mesh.scaleUp(glm::vec3(-0.1f));
+	}
 }
