@@ -4,7 +4,7 @@
 
 // ENUMERATIONS
 enum shader_enum{ SHADER_CORE_PROGRAM = 0 };
-enum texture_enum{ TEX_0 = 0, TEX_1 };
+enum texture_enum{ TEX_0 = 0, TEX_0_SPECULAR, TEX_1, TEX_1_SPECULAR };
 enum material_enum { MAT_1 = 0 };
 enum mesh_enum { MESH_QUAD = 0 };
 
