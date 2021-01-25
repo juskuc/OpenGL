@@ -64,6 +64,9 @@ void Game::initOpenGLOptions()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	// Input
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void Game::initMatrices()
@@ -183,10 +186,23 @@ Game::Game(
 	this->nearPlane = 0.1f;
 	this->farPlane = 1000.f;
 
+	this->dt = 0.0f;
+	this->currTime = 0.f;
+	this->lastTime = 0.f;
+	
+	this->lastMouseX = 0.0;
+	this->lastMouseY = 0.0;
+	this->mouseX = 0.0;
+	this->mouseY = 0.0;
+	this->mouseOffsetX = 0.0;
+	this->mouseOffsetY = 0.0;
+	this->firstMouse = true;
+
 	this->initGLFW();
 	this->initWindow(title, resizable);
 	this->initGLEW();
 	this->initOpenGLOptions();
+
 	this->initMatrices();
 	this->initShaders();
 	this->initTextures();
@@ -229,8 +245,35 @@ void Game::setWindowShouldClose()
 	glfwSetWindowShouldClose(this->window, GLFW_TRUE);
 }
 
+// Functions
+void Game::updateDt()
+{
+	this->currTime = static_cast<float>(glfwGetTime());
+	this->dt = this->currTime - this->lastTime;
+	this->lastTime = this->currTime;
+}
 
-void Game::updateInput()
+void Game::updateMouseInput()
+{
+	glfwGetCursorPos(this->window, &this->mouseX, &this->mouseY);
+
+	if (this->firstMouse)
+	{
+		this->lastMouseX = this->mouseX;
+		this->lastMouseY = this->mouseY;
+		this->firstMouse = false;
+	}
+
+	// Calc offset
+	this->mouseOffsetX = this->mouseX - this->lastMouseX;
+	this->mouseOffsetY = this->lastMouseY - this->mouseY;
+
+	// Set last X and Y
+	this->lastMouseX = this->mouseX;
+	this->lastMouseY = this->mouseY;
+}
+
+void Game::updateKeyboardInput()
 {
 	// Program
 	if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -265,13 +308,22 @@ void Game::updateInput()
 	}
 }
 
-// Functions
+void Game::updateInput()
+{
+	glfwPollEvents();
+
+	this->updateKeyboardInput();
+	this->updateMouseInput();
+}
+
 void Game::update()
 {
 	// Update input
-	glfwPollEvents();
+	this->updateDt();
 	this->updateInput();
 
+	std::cout << "DT: " << this->dt << "\n"
+		<< "Mouse offsetX: " << this->mouseOffsetX << " Mouse offsetY: " << this->mouseOffsetY << "\n";
 }
 
 void Game::render()
