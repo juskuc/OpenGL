@@ -136,15 +136,15 @@ void Game::initUniforms()
 	this->shaders[SHADER_CORE_PROGRAM]->setMat4fv(ProjectionMatrix, "ProjectionMatrix");
 
 	this->shaders[SHADER_CORE_PROGRAM]->setVec3f(*this->lights[0], "lightPos0");
-	this->shaders[SHADER_CORE_PROGRAM]->setVec3f(this->camPosition, "cameraPos");
 }
 
 void Game::updateUniforms()
 {
 	// Update view matrix (camera)
-	this->ViewMatrix = glm::lookAt(this->camPosition, this->camPosition + this->camFront, this->worldUp);
+	this->ViewMatrix = this->camera.getViewMatrix();
 
 	this->shaders[SHADER_CORE_PROGRAM]->setMat4fv(this->ViewMatrix, "ViewMatrix");
+	this->shaders[SHADER_CORE_PROGRAM]->setVec3f(this->camera.getPosition(), "cameraPos");
 
 	// Update framebuffer size and projection matrix
 	glfwGetFramebufferSize(this->window, &this->framebufferWidth, &this->framebufferHeight);
@@ -171,7 +171,8 @@ Game::Game(
 	WINDOW_WIDTH(WINDOW_WIDTH),
 	WINDOW_HEIGHT(WINDOW_HEIGHT),
 	GL_VERSION_MAJOR(GL_VERSION_MAJOR),
-	GL_VERSION_MINOR(GL_VERSION_MINOR)
+	GL_VERSION_MINOR(GL_VERSION_MINOR),
+	camera(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 1.f, 0.f))
 {
 	// Init variables
 	this->window = nullptr;
@@ -278,25 +279,25 @@ void Game::updateKeyboardInput()
 	// Program
 	if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
-		glfwWindowShouldClose(this->window);
+		glfwSetWindowShouldClose(this->window, GLFW_TRUE);
 	}
 
 	// Camera
 	if (glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		this->camPosition.z -= 0.05f;
+		this->camera.move(this->dt, FORWARD);
 	}
 	if (glfwGetKey(this->window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		this->camPosition.z += 0.05f;
+		this->camera.move(this->dt, BACKWARD);
 	}
 	if (glfwGetKey(this->window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		this->camPosition.x -= 0.05f;
+		this->camera.move(this->dt, LEFT);
 	}
 	if (glfwGetKey(this->window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		this->camPosition.x += 0.05f;
+		this->camera.move(this->dt, RIGHT);
 	}
 	if (glfwGetKey(this->window, GLFW_KEY_C) == GLFW_PRESS)
 	{
@@ -314,6 +315,7 @@ void Game::updateInput()
 
 	this->updateKeyboardInput();
 	this->updateMouseInput();
+	this->camera.updateInput(dt, -1, this->mouseOffsetX, this->mouseOffsetY);
 }
 
 void Game::update()
@@ -322,6 +324,7 @@ void Game::update()
 	this->updateDt();
 	this->updateInput();
 
+	this->meshes[0]->rotate(glm::vec3(0.f, 1.f, 0.f));
 	std::cout << "DT: " << this->dt << "\n"
 		<< "Mouse offsetX: " << this->mouseOffsetX << " Mouse offsetY: " << this->mouseOffsetY << "\n";
 }

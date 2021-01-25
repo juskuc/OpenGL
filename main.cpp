@@ -5,7 +5,7 @@ int main()
 {
 	Game game(
 		"OpenGL",
-		640, 480,
+		1600, 1200,
 		4, 4,
 		false);
 
