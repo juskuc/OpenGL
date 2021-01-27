@@ -124,6 +124,18 @@ void Game::initMeshes()
 	);
 }
 
+void Game::initModels()
+{
+	this->models.push_back(new Model(
+		glm::vec3(0.f),
+		this->materials[0],
+		this->textures[TEX_1],
+		this->textures[TEX_1_SPECULAR],
+		this->meshes
+		)
+	);
+}
+
 void Game::initLights()
 {
 	this->lights.push_back(new glm::vec3(0.f, 0.f, 1.f));
@@ -209,6 +221,7 @@ Game::Game(
 	this->initTextures();
 	this->initMaterials();
 	this->initMeshes();
+	this->initModels();
 	this->initLights();
 	this->initUniforms();
 }
@@ -229,6 +242,9 @@ Game::~Game()
 
 	for (size_t i = 0; i < this->meshes.size(); i++)
 		delete this->meshes[i];
+
+	for (auto*& i : this->models)
+		delete i;
 
 	for (size_t i = 0; i < this->lights.size(); i++)
 		delete this->lights[i];
@@ -324,7 +340,7 @@ void Game::update()
 	this->updateDt();
 	this->updateInput();
 
-	this->meshes[0]->rotate(glm::vec3(0.f, 1.f, 0.f));
+	//this->meshes[0]->rotate(glm::vec3(0.f, 1.f, 0.f));
 	std::cout << "DT: " << this->dt << "\n"
 		<< "Mouse offsetX: " << this->mouseOffsetX << " Mouse offsetY: " << this->mouseOffsetY << "\n";
 }
@@ -333,27 +349,16 @@ void Game::render()
 {
 	// DRAW ---
 	// Clear
-	glClearColor(0.2f, 0.3f, 0.2f, 1.f);
+	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	// Update the uniforms
 	this->updateUniforms();
 
-	// Update uniforms
-	this->materials[MAT_1]->sendToShader(*this->shaders[SHADER_CORE_PROGRAM]);
-
-	// Use a program
-	this->shaders[SHADER_CORE_PROGRAM]->use();
-
-	// Activate texture
-	this->textures[TEX_1]->bind(0);
-	this->textures[TEX_1_SPECULAR]->bind(1);
-
-	// Draw
-	this->meshes[MESH_QUAD]->render(this->shaders[SHADER_CORE_PROGRAM]);
+	this->models[0]->render(this->shaders[SHADER_CORE_PROGRAM]);
 
 	// End Draw
-	glfwSwapBuffers(this->window);
+	glfwSwapBuffers(window);
 	glFlush();
 
 	glBindVertexArray(0);
