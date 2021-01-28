@@ -106,34 +106,79 @@ void Game::initMaterials()
 		0, 1));
 }
 
-void Game::initMeshes()
-{
-	Pyramid tempQuad = Pyramid();
-	this->meshes.push_back(new Mesh(&tempQuad,
-		glm::vec3(0.f),
-		glm::vec3(0.f),
-		glm::vec3(1.f)
-		)
-	);
-
-	this->meshes.push_back(new Mesh(&tempQuad,
-		glm::vec3(0.f),
-		glm::vec3(0.f),
-		glm::vec3(1.f)
-	)
-	);
-}
+//void Game::initMeshes()
+//{
+//	Pyramid tempQuad = Pyramid();
+//	meshes.push_back(new Mesh(&tempQuad,
+//		glm::vec3(0.f),
+//		glm::vec3(0.f),
+//		glm::vec3(1.f)
+//		)
+//	);
+//
+//	meshes.push_back(new Mesh(&tempQuad,
+//		glm::vec3(0.f),
+//		glm::vec3(0.f),
+//		glm::vec3(1.f)
+//		)
+//	);
+//}
 
 void Game::initModels()
 {
+	std::vector<Mesh*> meshes;
+	Pyramid tempQuad = Pyramid();
+	Quad temp = Quad();
+
+	meshes.push_back(
+		new Mesh(
+			&tempQuad,
+			glm::vec3(1.f, 0.f, 0.f),
+			glm::vec3(0.f),
+			glm::vec3(0.f),
+			glm::vec3(1.f)
+		)
+	);
+
+	meshes.push_back(
+		new Mesh(
+			&temp,
+			glm::vec3(0.f, 0.f, 0.f),
+			glm::vec3(0.f),
+			glm::vec3(0.f),
+			glm::vec3(1.f)
+		)
+	);
+
 	this->models.push_back(new Model(
 		glm::vec3(0.f),
 		this->materials[0],
 		this->textures[TEX_1],
 		this->textures[TEX_1_SPECULAR],
-		this->meshes
+		meshes
 		)
 	);
+
+	this->models.push_back(new Model(
+		glm::vec3(0.f, 1.f, 1.f),
+		this->materials[0],
+		this->textures[TEX_0],
+		this->textures[TEX_0_SPECULAR],
+		meshes
+		)
+	);
+
+	this->models.push_back(new Model(
+		glm::vec3(2.f, 0.f, 2.f),
+		this->materials[0],
+		this->textures[TEX_1],
+		this->textures[TEX_1_SPECULAR],
+		meshes
+	)
+	);
+
+	for (auto*& i : meshes)
+		delete i;
 }
 
 void Game::initLights()
@@ -220,7 +265,6 @@ Game::Game(
 	this->initShaders();
 	this->initTextures();
 	this->initMaterials();
-	this->initMeshes();
 	this->initModels();
 	this->initLights();
 	this->initUniforms();
@@ -239,9 +283,6 @@ Game::~Game()
 	
 	for (size_t i = 0; i < this->materials.size(); i++)
 		delete this->materials[i];
-
-	for (size_t i = 0; i < this->meshes.size(); i++)
-		delete this->meshes[i];
 
 	for (auto*& i : this->models)
 		delete i;
@@ -341,6 +382,11 @@ void Game::update()
 	this->updateInput();
 
 	//this->meshes[0]->rotate(glm::vec3(0.f, 1.f, 0.f));
+	
+	this->models[0]->rotate(glm::vec3(0.f, 1.f, 0.f));
+	this->models[1]->rotate(glm::vec3(0.f, 1.f, 0.f));
+	this->models[2]->rotate(glm::vec3(0.f, 1.f, 0.f));
+
 	std::cout << "DT: " << this->dt << "\n"
 		<< "Mouse offsetX: " << this->mouseOffsetX << " Mouse offsetY: " << this->mouseOffsetY << "\n";
 }
@@ -355,7 +401,8 @@ void Game::render()
 	// Update the uniforms
 	this->updateUniforms();
 
-	this->models[0]->render(this->shaders[SHADER_CORE_PROGRAM]);
+	for (auto&i : this->models)
+		i->render(this->shaders[SHADER_CORE_PROGRAM]);
 
 	// End Draw
 	glfwSwapBuffers(window);
