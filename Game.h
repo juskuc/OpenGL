@@ -2,6 +2,7 @@
 
 #include "libs.h"
 #include "Camera.h"
+#include "OBJLoader.h"
 
 // ENUMERATIONS
 enum shader_enum{ SHADER_CORE_PROGRAM = 0 };
@@ -79,6 +80,7 @@ private:
 	void initShaders();
 	void initTextures();
 	void initMaterials();
+	void initOBJModels();
 	void initModels();
 	void initLights();
 	void initUniforms();

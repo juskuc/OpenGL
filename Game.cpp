@@ -106,23 +106,11 @@ void Game::initMaterials()
 		0, 1));
 }
 
-//void Game::initMeshes()
-//{
-//	Pyramid tempQuad = Pyramid();
-//	meshes.push_back(new Mesh(&tempQuad,
-//		glm::vec3(0.f),
-//		glm::vec3(0.f),
-//		glm::vec3(1.f)
-//		)
-//	);
-//
-//	meshes.push_back(new Mesh(&tempQuad,
-//		glm::vec3(0.f),
-//		glm::vec3(0.f),
-//		glm::vec3(1.f)
-//		)
-//	);
-//}
+void Game::initOBJModels()
+{
+	std::vector<Vertex> temp;
+	temp = loadOBJ("OBJFiles/cube.obj");
+}
 
 void Game::initModels()
 {
@@ -265,6 +253,7 @@ Game::Game(
 	this->initShaders();
 	this->initTextures();
 	this->initMaterials();
+	this->initOBJModels();
 	this->initModels();
 	this->initLights();
 	this->initUniforms();

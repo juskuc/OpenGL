@@ -154,6 +154,7 @@
   <ItemGroup>
     <ClInclude Include="Game.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="OBJLoader.h" />
     <ClInclude Include="libs.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
